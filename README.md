@@ -1,6 +1,6 @@
 # FinancePro Frontend
 
-Frontend desenvolvido com **Next.js**, consumindo a API de gestão **Financeira e Social**.
+Frontend desenvolvido com **Next.js**, consumindo a API de gestão financeira (FinancePro)[https://github.com/thgmagno/finance-pro].
 
 Interface moderna e responsiva para gerenciamento de despesas, receitas e interações em grupo.
 
