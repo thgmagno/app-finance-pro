@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Eye, EyeOff } from 'lucide-react'
 import { Label } from '@radix-ui/react-label'
 import clsx from 'clsx'
-import { ShowError } from './ShowError'
+import { ShowMessage } from './ShowMessage'
 
 interface InputPasswordProps extends React.ComponentProps<typeof Input> {
   confirm?: boolean
@@ -58,7 +58,7 @@ export function InputPassword({
           {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
         </Button>
       </div>
-      <ShowError errorMessage={errorMessage} />
+      <ShowMessage message={errorMessage} />
     </div>
   )
 }

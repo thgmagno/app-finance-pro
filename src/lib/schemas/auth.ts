@@ -9,7 +9,17 @@ export const LoginFormSchema = z.object({
 })
 
 export const RegisterFormSchema = z.object({
-  name: z.string().min(1, 'Nome é obrigatório'),
+  name: z
+    .string()
+    .min(1, 'Nome é obrigatório')
+    .transform((val) => {
+      const splited = val.split(' ')
+      return splited
+        .map((spl) =>
+          spl.charAt(0).toUpperCase().concat(spl.slice(1).toLowerCase()),
+        )
+        .join(' ')
+    }),
   email: z.string().min(1, 'E-mail é obrigatório').email('E-mail inválido'),
   password: z
     .string()

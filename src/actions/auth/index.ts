@@ -1,5 +1,7 @@
 'use server'
 
+import { fetcher } from '@/lib/fetcher'
+import { hashPassword } from '@/lib/helpers'
 import { LoginFormSchema, RegisterFormSchema } from '@/lib/schemas/auth'
 import { LoginFormState, RegisterFormState } from '@/lib/states/auth'
 import { redirect } from 'next/navigation'
@@ -76,7 +78,30 @@ export async function register(
     }
   }
 
-  console.log('Registration successful with data:', parsed.data)
+  try {
+    const hash = await hashPassword(parsed.data.password)
+    const res = await fetcher({
+      url: '/auth/register',
+      method: 'POST',
+      options: {
+        body: JSON.stringify({
+          name: parsed.data.name,
+          email: parsed.data.email,
+          hash,
+        }),
+      },
+    })
+    if (res.error) {
+      return { errors: { _form: res.message }, prevState: parsed.data }
+    }
 
-  return { errors: {} }
+    return { response: res.message, prevState: parsed.data, errors: {} }
+  } catch {
+    return {
+      errors: {
+        _form:
+          'Não foi possível estabelecer uma conexão segura com o servidor. Tente novamente',
+      },
+    }
+  }
 }

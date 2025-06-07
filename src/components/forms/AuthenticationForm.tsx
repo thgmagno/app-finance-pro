@@ -1,10 +1,11 @@
 'use client'
 
-import { useActionState, useState } from 'react'
+import { useActionState, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { actions } from '@/actions'
 import { InputCustom } from './fields/InputCustom'
 import { InputPassword } from './fields/InputPassword'
+import { ShowMessage } from './fields/ShowMessage'
 
 export function AuthenticationForm() {
   const [mode, setMode] = useState<'login' | 'register'>('login')
@@ -80,6 +81,12 @@ function LoginForm({ toggleMode }: { toggleMode: () => void }) {
         errorMessage={formState.errors?.password}
         prevState={formState.prevState?.password}
       />
+      {formState.response && (
+        <ShowMessage message={formState.response} type="success" />
+      )}
+      {formState.errors._form && (
+        <ShowMessage message={formState.errors._form} />
+      )}
       <Button type="submit" disabled={isPending}>
         {isPending ? 'Aguarde...' : 'Entrar'}
       </Button>
@@ -126,6 +133,12 @@ function RegisterForm({ toggleMode }: { toggleMode: () => void }) {
         errorMessage={formState.errors?.confirmPassword}
         prevState={formState.prevState?.confirmPassword}
       />
+      {formState.response && (
+        <ShowMessage message={formState.response} type="success" />
+      )}
+      {formState.errors._form && (
+        <ShowMessage message={formState.errors._form} />
+      )}
       <Button type="submit" disabled={isPending}>
         {isPending ? 'Aguarde...' : 'Criar conta'}
       </Button>

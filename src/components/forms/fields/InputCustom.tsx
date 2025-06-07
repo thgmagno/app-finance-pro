@@ -1,7 +1,7 @@
 import { Input } from '@/components/ui/input'
 import { Label } from '@radix-ui/react-label'
 import clsx from 'clsx'
-import { ShowError } from './ShowError'
+import { ShowMessage } from './ShowMessage'
 
 interface Props extends React.ComponentProps<typeof Input> {
   type?: 'text' | 'email' | 'password' | 'number' | 'tel' | 'url'
@@ -40,7 +40,7 @@ export function InputCustom({
         })}
         {...rest}
       />
-      <ShowError errorMessage={errorMessage} />
+      <ShowMessage message={errorMessage} />
     </div>
   )
 }
