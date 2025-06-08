@@ -54,7 +54,7 @@ function FormWrapper({
   return (
     <form
       action={action}
-      className="flex w-[92%] max-w-sm flex-col items-center rounded-4xl bg-neutral-900 p-6 shadow-lg sm:p-8"
+      className="flex w-[92%] max-w-[416px] flex-col items-center rounded-4xl bg-neutral-900 p-6 shadow-lg sm:p-8"
     >
       <HeaderForm />
       <div className="flex w-full flex-col space-y-3">{children}</div>

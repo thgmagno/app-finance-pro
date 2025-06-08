@@ -1,10 +1,13 @@
 'use server'
 
+import { env } from '@/lib/env'
 import { fetcher } from '@/lib/fetcher'
-import { hashPassword } from '@/lib/helpers'
 import { LoginFormSchema, RegisterFormSchema } from '@/lib/schemas/auth'
 import { LoginFormState, RegisterFormState } from '@/lib/states/auth'
+import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
+import * as jose from 'jose'
+import { getPrevState } from '../utils'
 
 export async function login(
   formState: LoginFormState,
@@ -12,49 +15,40 @@ export async function login(
 ): Promise<LoginFormState> {
   const data = Object.fromEntries(formData.entries())
   const parsed = LoginFormSchema.safeParse(data)
+  const prevState = getPrevState(formData)
 
   if (!parsed.success) {
-    return {
-      errors: parsed.error.flatten().fieldErrors,
-      prevState: data as Partial<LoginFormState['prevState']>,
-    }
+    return { errors: parsed.error.flatten().fieldErrors, prevState }
   }
 
   try {
-    const response = await fetch('http://localhost:3001/auth/login', {
+    const res = await fetcher({
+      url: '/auth/register',
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(parsed.data),
+      options: { body: JSON.stringify(parsed.data) },
     })
-    if (!response.ok) {
-      const errorData = await response.json()
-      return {
-        errors: { _form: errorData.message || 'Erro ao processar o login.' },
-        prevState: parsed.data,
-      }
+    if (res.error) {
+      return { errors: { _form: res.message }, prevState }
     }
-    const result = await response.json()
-    const token = String(result.token)
-    // criar cookies para armazenar a sessão do usuário
+
+    const { token } = res.data as { token: string }
+    createSessionAndRedirect(token)
+
+    return { response: 'Login efetuado com sucesso', errors: {} }
   } catch {
     return {
       errors: {
         _form: 'Erro ao processar o login. Tente novamente mais tarde.',
       },
-      prevState: parsed.data,
+      prevState,
     }
   }
-
-  redirect('/')
 }
 
 export async function logout() {
-  // Placeholder for logout logic
-  // This function should handle user logout
-  // For example, it could clear user session or token
-  console.log('Logout function called')
+  const cookieStore = await cookies()
+  cookieStore.delete(env.SESSION_KEY)
+  redirect('/auth')
 }
 
 export async function register(
@@ -63,45 +57,63 @@ export async function register(
 ): Promise<RegisterFormState> {
   const data = Object.fromEntries(formData.entries())
   const parsed = RegisterFormSchema.safeParse(data)
+  const prevState = getPrevState(formData)
 
   if (!parsed.success) {
     return {
       errors: parsed.error.flatten().fieldErrors,
-      prevState: data as Partial<RegisterFormState['prevState']>,
+      prevState: getPrevState(formData),
     }
   }
 
   if (parsed.data.password !== parsed.data.confirmPassword) {
     return {
       errors: { confirmPassword: ['As senhas não coincidem'] },
-      prevState: parsed.data,
+      prevState,
     }
   }
 
   try {
-    const hash = await hashPassword(parsed.data.password)
     const res = await fetcher({
       url: '/auth/register',
       method: 'POST',
-      options: {
-        body: JSON.stringify({
-          name: parsed.data.name,
-          email: parsed.data.email,
-          hash,
-        }),
-      },
+      options: { body: JSON.stringify(parsed.data) },
     })
     if (res.error) {
-      return { errors: { _form: res.message }, prevState: parsed.data }
+      return { errors: { _form: res.message }, prevState }
     }
 
-    return { response: res.message, prevState: parsed.data, errors: {} }
+    return { response: res.message, errors: {} }
   } catch {
     return {
+      prevState,
       errors: {
         _form:
           'Não foi possível estabelecer uma conexão segura com o servidor. Tente novamente',
       },
     }
+  }
+}
+
+export async function createSessionAndRedirect(token: string) {
+  if (await verifyToken(token)) {
+    const cookieStore = await cookies()
+    cookieStore.set(env.SESSION_KEY, token)
+    redirect('/')
+  }
+  redirect('/auth')
+}
+
+export async function verifyToken(token: string) {
+  try {
+    const { payload } = await jose.jwtVerify(
+      token,
+      new TextEncoder().encode(env.JWT_SECRET),
+      { issuer: env.APP_NAME },
+    )
+
+    return payload
+  } catch {
+    return null
   }
 }

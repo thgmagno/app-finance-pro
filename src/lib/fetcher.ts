@@ -19,8 +19,8 @@ export async function fetcher({
   tags,
   method,
 }: Props): Promise<FethcerResponse> {
-  const tUrl = `${env.API_URL}${url}`
-  const res = await fetch(tUrl, {
+  const apiUrl = `${env.API_URL}${url}`
+  const res = await fetch(apiUrl, {
     headers: { 'Content-Type': 'application/json' },
     method,
     next: { tags },
