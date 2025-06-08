@@ -1,4 +1,9 @@
+'use server'
+
 import { env } from './env'
+import { cookies } from 'next/headers'
+import { actions } from '@/actions'
+import { UserCtx } from './types'
 
 interface Props {
   url: string
@@ -66,4 +71,18 @@ export async function fetcher({
   }
 
   return { error: false, message: await res.text() }
+}
+
+export async function fetcherUserCtx(): Promise<UserCtx | null> {
+  const cookieStore = await cookies()
+  const token = cookieStore.get(env.SESSION_KEY)?.value
+  const payload = await actions.auth.verifyToken(token)
+  if (!token || !payload || !payload.sub) return null
+  const res = await fetcher({
+    url: '/me',
+    options: { headers: { Authorization: `Bearer ${token}` } },
+    tags: [`user-ctx-${payload.sub}`],
+  })
+
+  return (res.data as { userCtx: UserCtx }).userCtx
 }

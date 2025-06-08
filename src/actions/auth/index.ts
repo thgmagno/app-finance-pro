@@ -33,8 +33,7 @@ export async function login(
     }
 
     token = (res.data as { token: string }).token
-  } catch (error) {
-    console.log(error)
+  } catch {
     return {
       errors: {
         _form: 'Erro ao processar o login. Tente novamente mais tarde.',
