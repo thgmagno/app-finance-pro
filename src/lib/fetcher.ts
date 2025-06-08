@@ -21,7 +21,12 @@ export async function fetcher({
 }: Props): Promise<FethcerResponse> {
   const apiUrl = `${env.API_URL}${url}`
 
-  const { headers: optHeaders, ...restOptions } = options ?? {}
+  const { headers: optHeaders, ...restOptionsOriginal } = options ?? {}
+  const restOptions = { ...restOptionsOriginal }
+
+  if ((method === 'GET' || method === 'DELETE') && restOptions.body) {
+    delete restOptions.body
+  }
 
   const headers = {
     'Content-Type': 'application/json',
@@ -37,7 +42,12 @@ export async function fetcher({
 
   const res = await fetch(apiUrl, fetchOptions)
 
-  const json = await res.json()
+  let json
+  try {
+    json = await res.json()
+  } catch {
+    json = null
+  }
 
   if (!res.ok) {
     return {
