@@ -23,9 +23,11 @@ import { LifeBuoy, LogOut, User, Users } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale/pt-BR'
 import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
 export function Navigation() {
   const { userCtx, lastUpdateAt } = useUserStore()
+  const { replace } = useRouter()
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -48,6 +50,10 @@ export function Navigation() {
   return (
     <nav className="card mx-auto flex items-center justify-between border-b py-6 shadow md:my-6">
       <Menubar className="pl-3 md:pl-6">
+        <MenubarMenu>
+          <MenubarTrigger onClick={() => replace('/')}>Início</MenubarTrigger>
+        </MenubarMenu>
+
         <MenubarMenu>
           <MenubarTrigger>Financeiro</MenubarTrigger>
           <MenubarContent>
@@ -107,7 +113,7 @@ export function Navigation() {
           <DropdownMenuItem>
             <User /> Perfil
           </DropdownMenuItem>
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={() => replace('/group')}>
             <Users /> Grupo
           </DropdownMenuItem>
           <DropdownMenuItem>
