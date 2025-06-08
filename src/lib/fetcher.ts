@@ -28,6 +28,10 @@ export async function fetcher({
     delete restOptions.body
   }
 
+  if (restOptions.body && typeof restOptions.body !== 'string') {
+    restOptions.body = JSON.stringify(restOptions.body)
+  }
+
   const headers = {
     'Content-Type': 'application/json',
     ...optHeaders,
