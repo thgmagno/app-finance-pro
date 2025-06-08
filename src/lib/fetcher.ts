@@ -17,15 +17,25 @@ export async function fetcher({
   url,
   options,
   tags,
-  method,
+  method = 'GET',
 }: Props): Promise<FethcerResponse> {
   const apiUrl = `${env.API_URL}${url}`
-  const res = await fetch(apiUrl, {
-    headers: { 'Content-Type': 'application/json' },
+
+  const { headers: optHeaders, ...restOptions } = options ?? {}
+
+  const headers = {
+    'Content-Type': 'application/json',
+    ...optHeaders,
+  }
+
+  const fetchOptions: RequestInit = {
     method,
+    headers,
     next: { tags },
-    ...options,
-  })
+    ...restOptions,
+  }
+
+  const res = await fetch(apiUrl, fetchOptions)
 
   const json = await res.json()
 
