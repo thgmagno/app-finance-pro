@@ -21,9 +21,10 @@ export async function login(
     return { errors: parsed.error.flatten().fieldErrors, prevState }
   }
 
+  let token
   try {
     const res = await fetcher({
-      url: '/auth/register',
+      url: '/auth/login',
       method: 'POST',
       options: { body: JSON.stringify(parsed.data) },
     })
@@ -31,11 +32,9 @@ export async function login(
       return { errors: { _form: res.message }, prevState }
     }
 
-    const { token } = res.data as { token: string }
-    createSessionAndRedirect(token)
-
-    return { response: 'Login efetuado com sucesso', errors: {} }
-  } catch {
+    token = (res.data as { token: string }).token
+  } catch (error) {
+    console.log(error)
     return {
       errors: {
         _form: 'Erro ao processar o login. Tente novamente mais tarde.',
@@ -43,6 +42,9 @@ export async function login(
       prevState,
     }
   }
+
+  await createSessionAndRedirect(token)
+  return { response: 'Login efetuado com sucesso', errors: {} }
 }
 
 export async function logout() {
@@ -100,11 +102,13 @@ export async function createSessionAndRedirect(token: string) {
     const cookieStore = await cookies()
     cookieStore.set(env.SESSION_KEY, token)
     redirect('/')
+  } else {
+    redirect('/auth')
   }
-  redirect('/auth')
 }
 
-export async function verifyToken(token: string) {
+export async function verifyToken(token?: string) {
+  if (!token) return null
   try {
     const { payload } = await jose.jwtVerify(
       token,

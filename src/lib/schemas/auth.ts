@@ -19,6 +19,7 @@ export const RegisterFormSchema = z.object({
           spl.charAt(0).toUpperCase().concat(spl.slice(1).toLowerCase()),
         )
         .join(' ')
+        .trim()
     }),
   email: z.string().min(1, 'E-mail é obrigatório').email('E-mail inválido'),
   password: z
