@@ -85,4 +85,7 @@
   body {
     @apply bg-background text-foreground;
   }
+  .card {
+    @apply border-neutral-800 bg-neutral-900 md:rounded-lg md:border
+  }
 }
